@@ -1,3 +1,11 @@
+2011-10-14  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* src/org/eclipse/linuxtools/cdt/autotools/ui/editors/IAutotoolsEditor.java (getAdaptor): Remove since
+	it is already part of interfaces extended.
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/ui/actions/InvokeAction.java: Rewrite file
+	accesses to not use getLocation() and instead use getLocationURI() since the former returns
+	null for remote files.
+
 2011-10-07  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* META-INF/MANIFEST.MF: Add org.eclipse.linuxtools.profiling.launch as dependency.
