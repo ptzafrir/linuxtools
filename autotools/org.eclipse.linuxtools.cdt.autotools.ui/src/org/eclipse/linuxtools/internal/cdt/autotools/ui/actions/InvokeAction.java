@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
@@ -51,6 +52,7 @@ import org.eclipse.linuxtools.cdt.autotools.ui.AutotoolsUIPlugin;
 import org.eclipse.linuxtools.internal.cdt.autotools.core.AutotoolsNewMakeGenerator;
 import org.eclipse.linuxtools.profiling.launch.IProcess;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
+import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.swt.widgets.Shell;
 
@@ -209,24 +211,26 @@ public abstract class InvokeAction extends AbstractTargetAction {
 
 	protected IPath getExecDir(IContainer container) {
 		int type = container.getType();
+		URI containerURI = container.getLocationURI();
+		String containerPath = "";
+		IRemoteFileProxy proxy;
+		try {
+			proxy = RemoteProxyManager.getInstance().getFileProxy(container.getProject());
+			containerPath = proxy.toPath(containerURI);
+		} catch (CoreException e) {
+			return null;
+		}
 		IPath execDir = null;
 		if (type == IContainer.FILE) {
-			execDir = container.getLocation().removeLastSegments(1);
+			execDir = new Path(containerPath).removeLastSegments(1);
 		} else {
-			execDir = container.getLocation();
+			execDir = new Path(containerPath);
 		}
 		return execDir;
 	}
 	
 	protected IPath getCWD(IContainer container) {
-		int type = container.getType();
-		IPath cwd = null;
-		if (type == IContainer.FILE) {
-			cwd = container.getFullPath().removeLastSegments(1);
-		} else {
-			cwd = container.getFullPath();
-		}
-		return cwd;
+		return getExecDir(container);
 	}
 	
 	private class ExecuteProgressDialog implements IRunnableWithProgress {
