@@ -11,12 +11,13 @@
 package org.eclipse.linuxtools.internal.cdt.autotools.core.configure;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -184,9 +185,10 @@ public class AutotoolsConfigurationManager implements IResourceChangeListener {
 		Map<String, IAConfiguration> list = configs.get(projectName);
 		if (list == null) {
 			try {
-				IPath fileLocation = project.getLocation().append(CFG_FILE_NAME);
+				URI projectLocation = project.getLocationURI();
+				URI fileLocation = new URI(projectLocation.toString() + "/" + CFG_FILE_NAME); // $NON-NLS-1$
 				IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(project);
-				IFileStore f = proxy.getResource(fileLocation.toString());
+				IFileStore f = proxy.getResource(proxy.toPath(fileLocation).toString());
 				Map<String, IAConfiguration> cfgList = new HashMap<String, IAConfiguration>();
 				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 				DocumentBuilder db = dbf.newDocumentBuilder();
@@ -246,6 +248,9 @@ public class AutotoolsConfigurationManager implements IResourceChangeListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -354,45 +359,46 @@ public class AutotoolsConfigurationManager implements IResourceChangeListener {
 	private void saveConfigs(IProject project, ICConfigurationDescription[] cfgds) {
 		try {
 			String projectName = project.getName();
-			IPath output = project.getLocation().append(CFG_FILE_NAME);
-			File f = output.toFile();
-			if (!f.exists())
-				f.createNewFile();
-			if (f.exists()) {
-				PrintWriter p = new PrintWriter(new BufferedWriter(new FileWriter(f)));
-				Map<String, IAConfiguration> cfgs = configs.get(projectName);
-				p.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //$NON-NLS-1$
-				p.println("<configurations>"); // $NON-NLS-1$
-				Option[] optionList = AutotoolsConfiguration.getOptionList();
-				// Before saving, force any cloning to occur via the option value handler.
-				setSyncing(true);
-				for (int i = 0; i < cfgds.length; ++i) {
-					@SuppressWarnings("unused")
-					CConfigurationData data = cfgds[i].getConfigurationData();
-				}
-				setSyncing(false);
-				for (int i = 0; i < cfgds.length; ++i) {
-					ICConfigurationDescription cfgd = cfgds[i];
-					String id = cfgd.getId();
-					IAConfiguration cfg = cfgs.get(id);
-					if (cfg == null) {
-						cfg = createDefaultConfiguration(project, id);
-					}
-					p.println("<configuration id=\"" + cfg.getId() + "\">"); //$NON-NLS-1$ //$NON-NLS-2$ 
-					for (int j = 0; j < optionList.length; ++j) {
-						Option option = optionList[j];
-						IConfigureOption opt = cfg.getOption(option.getName());
-						if (!opt.isCategory())
-							p.println("<option id=\"" + option.getName() + "\" value=\"" + xmlEscape(opt.getValue()) + "\"/>"); //$NON-NLS-1$ //$NON-NLS-2$ // $NON-NLS-3$
-					}
-					p.println("</configuration>"); //$NON-NLS-1$
-					// Sync name field as this configuration is now officially saved
-					syncNameField(cfgd);
-				}
-				p.println("</configurations>");
-				p.close();
+			URI projectLocation = project.getLocationURI();
+			URI fileLocation = new URI(projectLocation.toString() + "/" + CFG_FILE_NAME); // $NON-NLS-1$
+			IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(project);
+			IFileStore f = proxy.getResource(proxy.toPath(fileLocation).toString());
+			OutputStream output = f.openOutputStream(EFS.NONE, null);
+			PrintWriter p = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output)));
+			Map<String, IAConfiguration> cfgs = configs.get(projectName);
+			p.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //$NON-NLS-1$
+			p.println("<configurations>"); // $NON-NLS-1$
+			Option[] optionList = AutotoolsConfiguration.getOptionList();
+			// Before saving, force any cloning to occur via the option value handler.
+			setSyncing(true);
+			for (int i = 0; i < cfgds.length; ++i) {
+				@SuppressWarnings("unused")
+				CConfigurationData data = cfgds[i].getConfigurationData();
 			}
-		} catch (IOException e) {
+			setSyncing(false);
+			for (int i = 0; i < cfgds.length; ++i) {
+				ICConfigurationDescription cfgd = cfgds[i];
+				String id = cfgd.getId();
+				IAConfiguration cfg = cfgs.get(id);
+				if (cfg == null) {
+					cfg = createDefaultConfiguration(project, id);
+				}
+				p.println("<configuration id=\"" + cfg.getId() + "\">"); //$NON-NLS-1$ //$NON-NLS-2$ 
+				for (int j = 0; j < optionList.length; ++j) {
+					Option option = optionList[j];
+					IConfigureOption opt = cfg.getOption(option.getName());
+					if (!opt.isCategory())
+						p.println("<option id=\"" + option.getName() + "\" value=\"" + xmlEscape(opt.getValue()) + "\"/>"); //$NON-NLS-1$ //$NON-NLS-2$ // $NON-NLS-3$
+				}
+				p.println("</configuration>"); //$NON-NLS-1$
+				// Sync name field as this configuration is now officially saved
+				syncNameField(cfgd);
+			}
+			p.println("</configurations>");
+			p.close();
+		} catch (URISyntaxException e) {
+			AutotoolsPlugin.log(e);
+		} catch (CoreException e) {
 			AutotoolsPlugin.log(e);
 		}
 	}
