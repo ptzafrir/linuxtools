@@ -1,3 +1,10 @@
+2011-10-14  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/AutotoolsNewMakeGenerator.java: Fix all
+	remote file accesses to use getLocationURI for resources such as project rather than getLocation
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/configure/AutotoolsConfigurationManager.java: Ditto.
+	which will return null on remote resources.
+
 2011-10-07  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* META-INF/MANIFEST.MF: Add dependency on org.eclipse.linuxtools.profiling.launch.
