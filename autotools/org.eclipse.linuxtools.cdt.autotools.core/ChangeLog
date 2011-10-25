@@ -1,3 +1,10 @@
+2011-10-25  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/PkgconfigErrorResolution.java (run): Change
+	to use Process instead of IProcess.
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/AutotoolsNewMakeGenerator.java (runCommand): Ditto.
+	(runScript): Ditto.
+
 2011-10-14  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/AutotoolsNewMakeGenerator.java: Fix all

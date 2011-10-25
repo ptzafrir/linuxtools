@@ -75,7 +75,6 @@ import org.eclipse.linuxtools.cdt.autotools.core.AutotoolsPlugin;
 import org.eclipse.linuxtools.internal.cdt.autotools.core.configure.AutotoolsConfigurationManager;
 import org.eclipse.linuxtools.internal.cdt.autotools.core.configure.IAConfiguration;
 import org.eclipse.linuxtools.internal.cdt.autotools.core.configure.IConfigureOption;
-import org.eclipse.linuxtools.profiling.launch.IProcess;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
@@ -819,7 +818,7 @@ public class AutotoolsNewMakeGenerator extends MarkerGenerator {
 		OutputStream stderr = stdout;
 
 //		launcher.showCommand(true);
-		IProcess proc = launcher.execute(commandPath, configTargets, env,
+		Process proc = launcher.execute(commandPath, configTargets, env,
 				runPath, new NullProgressMonitor());
 		if (proc != null) {
 			try {
@@ -1055,7 +1054,7 @@ public class AutotoolsNewMakeGenerator extends MarkerGenerator {
 
 //		launcher.showCommand(true);
 		// Run the shell script via shell command.
-		IProcess proc = launcher.execute(new Path(SHELL_COMMAND), configTargets, env,
+		Process proc = launcher.execute(new Path(SHELL_COMMAND), configTargets, env,
 				runPath, new NullProgressMonitor());
 		if (proc != null) {
 			try {

@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.linuxtools.cdt.autotools.core.AutotoolsPlugin;
-import org.eclipse.linuxtools.profiling.launch.IProcess;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.ui.IMarkerResolution;
@@ -75,7 +74,7 @@ public class PkgconfigErrorResolution implements IMarkerResolution {
 			// Use CDT launcher to run rpm to query the package that provides
 			// the pkgconfig .pc file for the package in question.
 			ConsoleOutputStream output = new ConsoleOutputStream();
-			IProcess proc = launcher.execute(commandPath, commandArgs, null,
+			Process proc = launcher.execute(commandPath, commandArgs, null,
 					new Path("."), new NullProgressMonitor());
 			if (proc != null) {
 				try {
