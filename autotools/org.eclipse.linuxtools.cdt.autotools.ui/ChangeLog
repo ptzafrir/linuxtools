@@ -1,3 +1,9 @@
+2011-10-25  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/ui/actions/InvokeAction.java (..run): Switch to 
+	use Process.
+	(ExecuteProgressDialog.run): Ditto.
+
 2011-10-14  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* src/org/eclipse/linuxtools/cdt/autotools/ui/editors/IAutotoolsEditor.java (getAdaptor): Remove since
