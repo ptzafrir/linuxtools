@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.cdt.autotools.ui.editors.automake;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.eclipse.cdt.core.parser.ExtendedScannerInfo;
 import org.eclipse.cdt.core.parser.IExtendedScannerInfo;
 import org.eclipse.cdt.core.parser.IScannerInfo;
 import org.eclipse.cdt.core.parser.IScannerInfoProvider;
+import org.eclipse.cdt.core.resources.EFSFileStorage;
 import org.eclipse.cdt.ui.CUIPlugin;
 import org.eclipse.cdt.utils.PathUtil;
 import org.eclipse.core.filesystem.IFileStore;
@@ -87,17 +89,19 @@ public class OpenIncludeAction extends Action {
 		
 		try {
 			IResource res = include.getUnderlyingResource();
+			IProject proj = res.getProject();
+			IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(proj);
 			ArrayList<Object> filesFound = new ArrayList<Object>(4);
 			String fullFileName= include.getFullFileName();
 			if (fullFileName != null) {
 				IPath fullPath= new Path(fullFileName);
-				if (fullPath.isAbsolute() && fullPath.toFile().exists()) {
-					filesFound.add(fullPath);
+				if (fullPath.isAbsolute()) {
+					IFileStore fs = proxy.getResource(fullPath.toString());
+					if (fs != null && fs.fetchInfo().exists())
+						filesFound.add(fullPath);
 				}
 			}
 			if (filesFound.isEmpty() && res != null) {
-				IProject proj = res.getProject();
-				IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(proj);
 				String includeName = include.getElementName();
 				// Search in the scannerInfo information
 				IScannerInfoProvider provider =  CCorePlugin.getDefault().getScannerInfoProvider(proj);
@@ -114,7 +118,8 @@ public class OpenIncludeAction extends Action {
 						
 						if (!isSystemInclude) {
 							// search in current directory
-							IPath location= include.getTranslationUnit().getLocation();
+							URI transURI = include.getTranslationUnit().getLocationURI();
+							IPath location= new Path(transURI.getPath());
 							if (location != null) {
 								String currentDir= location.removeLastSegments(1).toOSString();
 								findFile(new String[] { currentDir }, includeName, proxy, filesFound);
@@ -151,7 +156,8 @@ public class OpenIncludeAction extends Action {
 			}
 			
 			if (fileToOpen != null) {
-				EditorUtility.openInEditor(fileToOpen, include);
+				EFSFileStorage storage = new EFSFileStorage(proxy.toURI(fileToOpen));
+				EditorUtility.openInEditor(storage);
 			} 
 		} catch (CModelException e) {
 			CUIPlugin.log(e.getStatus());
@@ -239,7 +245,8 @@ public class OpenIncludeAction extends Action {
 
 			public boolean visit(IResourceProxy proxy) throws CoreException {
 				if (proxy.getType() == IResource.FILE && proxy.getName().equalsIgnoreCase(name.lastSegment())) {
-					IPath rPath = proxy.requestResource().getLocation();
+					URI proxyURI = proxy.requestResource().getLocationURI();
+					IPath rPath = new Path(proxyURI.getPath());
 					int numSegToRemove = rPath.segmentCount() - name.segmentCount();
 					IPath sPath = rPath.removeFirstSegments(numSegToRemove);
 					sPath = sPath.setDevice(name.getDevice());
