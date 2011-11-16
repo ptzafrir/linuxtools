@@ -17,7 +17,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -186,7 +185,7 @@ public class AutotoolsConfigurationManager implements IResourceChangeListener {
 		if (list == null) {
 			try {
 				URI projectLocation = project.getLocationURI();
-				URI fileLocation = new URI(projectLocation.toString() + "/" + CFG_FILE_NAME); // $NON-NLS-1$
+				URI fileLocation = projectLocation.resolve("../" + project.getName() + "/" + CFG_FILE_NAME); // $NON-NLS-1$ // $NON-NLS-2$
 				IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(project);
 				IFileStore f = proxy.getResource(proxy.toPath(fileLocation).toString());
 				Map<String, IAConfiguration> cfgList = new HashMap<String, IAConfiguration>();
@@ -248,9 +247,6 @@ public class AutotoolsConfigurationManager implements IResourceChangeListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -360,7 +356,8 @@ public class AutotoolsConfigurationManager implements IResourceChangeListener {
 		try {
 			String projectName = project.getName();
 			URI projectLocation = project.getLocationURI();
-			URI fileLocation = new URI(projectLocation.toString() + "/" + CFG_FILE_NAME); // $NON-NLS-1$
+			URI fileLocation = projectLocation.resolve("../" + project.getName() + // $NON-NLS-2$ 
+					"/" + CFG_FILE_NAME); // $NON-NLS-1$
 			IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(project);
 			IFileStore f = proxy.getResource(proxy.toPath(fileLocation).toString());
 			OutputStream output = f.openOutputStream(EFS.NONE, null);
@@ -396,8 +393,6 @@ public class AutotoolsConfigurationManager implements IResourceChangeListener {
 			}
 			p.println("</configurations>");
 			p.close();
-		} catch (URISyntaxException e) {
-			AutotoolsPlugin.log(e);
 		} catch (CoreException e) {
 			AutotoolsPlugin.log(e);
 		}

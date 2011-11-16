@@ -16,7 +16,6 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -197,8 +196,6 @@ public class AutotoolsNewMakeGenerator extends MarkerGenerator {
 		}
 	}
 
-
-
 	/*
 	 * Create a directory
 	 * 
@@ -210,12 +207,8 @@ public class AutotoolsNewMakeGenerator extends MarkerGenerator {
 		boolean rc = true;
 		if (dirName.length() == 0 || dirName.equals(".")) {
 			URI projectURI = project.getLocationURI();
-			try {
-				URI newURI = new URI(projectURI.toASCIIString() + "/" + dirName);
-				path = new Path(proxy.toPath(newURI));
-			} catch (URISyntaxException e) {
-				return false;
-			}
+			URI newURI = projectURI.resolve("../" + project.getName() + "/" + dirName); //$NON-NLS-1$ //$NON-NLS-2$
+			path = new Path(proxy.toPath(newURI));
 		}
 		IFileStore fs = proxy.getResource(path.toString());
 		IFileInfo finfo = fs.fetchInfo();

@@ -1,3 +1,13 @@
+2011-11-16  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/configure/AutotoolsConfigurationManager.java (saveConfigs): Fix
+	URI creation to handle case where project has query.
+	(getSavedConfigs): Ditto.
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/AutotoolsNewMakeGenerator.java (createDirectory):
+	Fix URI creation to handle the case whereby there is a query in the project URI.
+	(runCommand): Use Process instead of IProcess.
+	(runScript): Ditto.
+
 2011-10-25  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/PkgconfigErrorResolution.java (run): Change
