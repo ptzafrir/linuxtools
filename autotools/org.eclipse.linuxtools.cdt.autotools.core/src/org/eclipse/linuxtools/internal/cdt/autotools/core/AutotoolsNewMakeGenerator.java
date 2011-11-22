@@ -207,8 +207,7 @@ public class AutotoolsNewMakeGenerator extends MarkerGenerator {
 		boolean rc = true;
 		if (dirName.length() == 0 || dirName.equals(".")) {
 			URI projectURI = project.getLocationURI();
-			URI newURI = projectURI.resolve("../" + project.getName() + "/" + dirName); //$NON-NLS-1$ //$NON-NLS-2$
-			path = new Path(proxy.toPath(newURI));
+			path = new Path(proxy.toPath(projectURI));
 		}
 		IFileStore fs = proxy.getResource(path.toString());
 		IFileInfo finfo = fs.fetchInfo();

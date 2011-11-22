@@ -1,3 +1,11 @@
+2011-11-22  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/configure/AutotoolsConfigurationManager.java (saveConfigs): Fix logic
+	for resolving .autotools file against project URI.
+	(getSavedConfigs): Ditto.
+	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/AutotoolsNewMakeGenerator.java (createDirectory):
+	Fix logic for referencing the project directory.
+
 2011-11-16  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* src/org/eclipse/linuxtools/internal/cdt/autotools/core/configure/AutotoolsConfigurationManager.java (saveConfigs): Fix

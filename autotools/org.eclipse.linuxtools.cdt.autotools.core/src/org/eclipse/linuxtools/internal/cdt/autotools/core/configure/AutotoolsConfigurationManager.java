@@ -185,7 +185,12 @@ public class AutotoolsConfigurationManager implements IResourceChangeListener {
 		if (list == null) {
 			try {
 				URI projectLocation = project.getLocationURI();
-				URI fileLocation = projectLocation.resolve("../" + project.getName() + "/" + CFG_FILE_NAME); // $NON-NLS-1$ // $NON-NLS-2$
+				String projectPath = projectLocation.getPath();
+				URI fileLocation = null;
+				if (projectPath.endsWith("/")) //$NON-NLS-1$
+				    fileLocation = projectLocation.resolve("./" + CFG_FILE_NAME); //$NON-NLS-1$
+				else
+				    fileLocation = projectLocation.resolve("./" + project.getName() + "/" + CFG_FILE_NAME); //$NON-NLS-1$ // $NON-NLS-2$
 				IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(project);
 				IFileStore f = proxy.getResource(proxy.toPath(fileLocation).toString());
 				Map<String, IAConfiguration> cfgList = new HashMap<String, IAConfiguration>();
@@ -356,8 +361,12 @@ public class AutotoolsConfigurationManager implements IResourceChangeListener {
 		try {
 			String projectName = project.getName();
 			URI projectLocation = project.getLocationURI();
-			URI fileLocation = projectLocation.resolve("../" + project.getName() + // $NON-NLS-2$ 
-					"/" + CFG_FILE_NAME); // $NON-NLS-1$
+			String projectPath = projectLocation.getPath();
+			URI fileLocation = null;
+			if (projectPath.endsWith("/")) //$NON-NLS-1$
+			    fileLocation = projectLocation.resolve("./" + CFG_FILE_NAME); //$NON-NLS-1$
+			else
+			    fileLocation = projectLocation.resolve("./" + project.getName() + "/" + CFG_FILE_NAME); //$NON-NLS-1$ // $NON-NLS-2$
 			IRemoteFileProxy proxy = RemoteProxyManager.getInstance().getFileProxy(project);
 			IFileStore f = proxy.getResource(proxy.toPath(fileLocation).toString());
 			OutputStream output = f.openOutputStream(EFS.NONE, null);
