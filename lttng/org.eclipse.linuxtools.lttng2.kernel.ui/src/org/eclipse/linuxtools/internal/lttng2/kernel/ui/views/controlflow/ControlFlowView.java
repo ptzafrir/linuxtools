@@ -443,6 +443,7 @@ public class ControlFlowView extends TmfView {
                             ControlFlowEntry entry = (ControlFlowEntry) element;
                             if (entry.getThreadId() == selectedThread) {
                                 fTimeGraphCombo.setSelection(entry);
+                                break;
                             }
                         }
                     }
