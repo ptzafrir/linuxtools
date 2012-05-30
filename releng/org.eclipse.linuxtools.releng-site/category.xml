@@ -62,8 +62,6 @@
       <category name="Linux Tools"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.gcov_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.gcov" version="0.0.0">
-   <feature url="features/org.eclipse.linuxtools.gcov_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.gcov" version="0.0.0">
-   <feature url="features/org.eclipse.linuxtools.gcov_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.gcov" version="0.0.0">
       <category name="Linux Tools"/>
    </feature>
    <feature url="features/org.eclipse.linuxtools.perf_0.0.0.qualifier.jar" id="org.eclipse.linuxtools.perf.feature" version="0.0.0">
