@@ -136,7 +136,7 @@
 
     <module>org.eclipse.linuxtools.lttng2</module>
     <module>org.eclipse.linuxtools.lttng2.core</module>
-    <!--  module>org.eclipse.linuxtools.lttng2.core.tests</module> activated by the lttngTests package -->
+    <module>org.eclipse.linuxtools.lttng2.core.tests</module>
     <module>org.eclipse.linuxtools.lttng2.ui</module>
     <module>org.eclipse.linuxtools.lttng2.ui.tests</module>
 
