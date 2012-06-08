@@ -15,7 +15,8 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 import java.nio.ByteOrder;
 
 /**
- * <b><u>IntegerDeclaration</u></b>
+ * <b><u>IntegerDeclaration</u></b><br>
+ * The declaration of a integer basic data type.
  */
 public class IntegerDeclaration implements IDeclaration {
 

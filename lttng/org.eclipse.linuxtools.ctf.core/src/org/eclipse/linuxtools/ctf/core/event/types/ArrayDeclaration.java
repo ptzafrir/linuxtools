@@ -13,7 +13,12 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 /**
- * <b><u>ArrayDeclaration</u></b>
+ * <b><u>ArrayDeclaration</u></b><br>
+ * Arrays are fixed-length. Their length is declared in the type
+ * declaration within the meta-data. They contain an array of "inner type"
+ * elements, which can refer to any type not containing the type of the
+ * array being declared (no circular dependency). The length is the number
+ * of elements in an array.
  */
 public class ArrayDeclaration implements IDeclaration {
 

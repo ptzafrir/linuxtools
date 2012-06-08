@@ -17,6 +17,8 @@ import java.util.List;
 
 /**
  * <b><u>EnumDeclaration</u></b>
+ * The declaration of a enum point basic data type. It will take the data
+ * from a trace and store it (and make it fit) as an integer and a string.
  */
 public class EnumDeclaration implements IDeclaration {
 

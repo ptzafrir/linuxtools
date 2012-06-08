@@ -14,6 +14,12 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 
 /**
  * <b><u>IDeclaration</u></b>
+ * A declaration is like a class defining a datatype.<br>
+ * An example: <br>
+ * int i = 0; <br>
+ * <b>int</b> is the declaration.<br>
+ * <b>i</b> is the definition.<br>
+ * <b>0</b> is the value assigned to the definition, not the declaration.<br>
  */
 public interface IDeclaration {
 

@@ -13,7 +13,8 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 /**
- * <b><u>IDefinitionScope</u></b>
+ * <b><u>IDefinitionScope</u></b><br>
+ * interface to a scope in a definition. Used for compound types.
  */
 public interface IDefinitionScope {
 

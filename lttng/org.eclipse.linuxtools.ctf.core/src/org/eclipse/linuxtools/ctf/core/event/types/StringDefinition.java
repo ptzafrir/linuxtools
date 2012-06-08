@@ -16,6 +16,9 @@ import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 
 /**
  * <b><u>StringDefinition</u></b>
+ * Strings are an array of bytes of variable size and are terminated by a '\0'
+ * "NULL" character. Their encoding is described in the TSDL meta-data. In
+ * absence of encoding attribute information, the default encoding is UTF-8.
  */
 public class StringDefinition extends Definition {
 

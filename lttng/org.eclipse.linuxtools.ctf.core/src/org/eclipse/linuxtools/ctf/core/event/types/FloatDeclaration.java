@@ -16,8 +16,9 @@ import java.nio.ByteOrder;
 /**
  * Float declaration
  *
- * @author Matthew Khouzam
+ * The declaration of a floating point basic data type.
  *
+ * @author Matthew Khouzam
  */
 public class FloatDeclaration implements IDeclaration {
 

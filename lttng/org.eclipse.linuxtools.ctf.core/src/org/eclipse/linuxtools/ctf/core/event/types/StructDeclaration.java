@@ -17,7 +17,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * <b><u>StructDeclaration</u></b>
+ * <b><u>StructDeclaration</u></b><br>
+ * A structure is similar to a C structure, it is a compound data type that
+ * contains other datatypes in fields. they are stored in an hashmap and indexed
+ * by names which are strings.
  */
 public class StructDeclaration implements IDeclaration {
 

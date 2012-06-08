@@ -17,6 +17,9 @@ import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 /**
  * <b><u>IntegerDefinition</u></b>
  * <p>
+ * The definition of a integer basic data type. It will take the data
+ * from a trace and store it (and make it fit) as a long.
+ * <p>
  * TODO: Reading integers with an endianness different from the trace endianness
  * is not supported
  */

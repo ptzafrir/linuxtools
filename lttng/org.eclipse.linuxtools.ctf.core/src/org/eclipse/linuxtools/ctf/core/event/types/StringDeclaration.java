@@ -13,7 +13,10 @@
 package org.eclipse.linuxtools.ctf.core.event.types;
 
 /**
- * <b><u>StringDeclaration</u></b>
+ * <b><u>StringDeclaration</u></b> <br>
+ * Strings are an array of bytes of variable size and are terminated by a '\0'
+ * "NULL" character. Their encoding is described in the TSDL meta-data. In
+ * absence of encoding attribute information, the default encoding is UTF-8.
  */
 public class StringDeclaration implements IDeclaration {
 
@@ -35,7 +38,10 @@ public class StringDeclaration implements IDeclaration {
 
     /**
      * generate an encoded string declaration
-     * @param encoding the encoding, utf8 or ascii
+     *
+     * @param encoding
+     *            the encoding, utf8 or ascii, untested with "encoding.none"
+     *            please don't test that use case, it doesn't make sense.
      */
     public StringDeclaration(Encoding encoding) {
         this.encoding = encoding;
@@ -55,7 +61,8 @@ public class StringDeclaration implements IDeclaration {
 
     /**
      *
-     * @param encoding the character encoding to set
+     * @param encoding
+     *            the character encoding to set
      */
     public void setEncoding(Encoding encoding) {
         this.encoding = encoding;
@@ -63,8 +70,9 @@ public class StringDeclaration implements IDeclaration {
 
     @Override
     public long getAlignment() {
-        return 8; //FIXME: should be the elementtype.
+        return 8; // FIXME: should be the elementtype.
     }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------

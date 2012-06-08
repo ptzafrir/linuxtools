@@ -16,6 +16,9 @@ import java.util.HashMap;
 
 /**
  * <b><u>VariantDeclaration</u></b>
+ * A variant is similar to a C union, only taking the minimum size of the types, it is a compound data type that
+ * contains other datatypes in fields. they are stored in an hashmap and indexed
+ * by names which are strings.
  */
 public class VariantDeclaration implements IDeclaration {
 

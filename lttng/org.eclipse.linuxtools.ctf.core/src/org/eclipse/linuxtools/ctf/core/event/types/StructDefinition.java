@@ -19,7 +19,11 @@ import java.util.ListIterator;
 import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 
 /**
- * <b><u>StructDefinition</u></b>
+ * <b><u>StructDefinition</u></b><br>
+ * A structure is similar to a C structure, it is a compound data type that
+ * contains other datatypes in fields. they are stored in an hashmap and indexed
+ * by names which are strings.
+ *
  */
 public class StructDefinition extends Definition implements IDefinitionScope {
 
@@ -167,8 +171,8 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a string in a struct. if the name returns a non-string (like
-     * an int) than the method returns null
+     * Lookup a string in a struct. if the name returns a non-string (like an
+     * int) than the method returns null
      *
      * @param name
      *            the name of the string
@@ -181,8 +185,8 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a struct in a struct. if the name returns a non-struct (like
-     * an int) than the method returns null
+     * Lookup a struct in a struct. if the name returns a non-struct (like an
+     * int) than the method returns null
      *
      * @param name
      *            the name of the struct
@@ -195,8 +199,8 @@ public class StructDefinition extends Definition implements IDefinitionScope {
     }
 
     /**
-     * Lookup a variant in a struct. if the name returns a non-variant (like
-     * an int) than the method returns null
+     * Lookup a variant in a struct. if the name returns a non-variant (like an
+     * int) than the method returns null
      *
      * @param name
      *            the name of the variant

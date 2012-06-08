@@ -15,7 +15,9 @@ package org.eclipse.linuxtools.ctf.core.event.types;
 import org.eclipse.linuxtools.internal.ctf.core.event.io.BitBuffer;
 
 /**
- * <b><u>EnumDefinition</u></b>
+ * <b><u>EnumDefinition</u></b><br>
+ * The definition of a enum point basic data type. It will take the data
+ * from a trace and store it (and make it fit) as an integer and a string.
  */
 public class EnumDefinition extends Definition {
 
