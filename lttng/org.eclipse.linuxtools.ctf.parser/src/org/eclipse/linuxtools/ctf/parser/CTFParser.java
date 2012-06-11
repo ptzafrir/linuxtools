@@ -27,8 +27,13 @@ import org.antlr.runtime.tree.RewriteEarlyExitException;
 import org.antlr.runtime.tree.RewriteRuleSubtreeStream;
 import org.antlr.runtime.tree.RewriteRuleTokenStream;
 import org.antlr.runtime.tree.TreeAdaptor;
-
-@SuppressWarnings({ "nls", "unused", "unchecked", "rawtypes" })
+/**
+ * TSDL parser. For internal use only.
+ *
+ * @author Matthew Khouzam and Antlr
+ *
+ */
+@SuppressWarnings({ "nls", "unused", "unchecked", "rawtypes","null" })
 public class CTFParser extends Parser {
     public static final String[] tokenNames = new String[] { "<invalid>",
             "<EOR>", "<DOWN>", "<UP>", "ALIGNTOK", "CONSTTOK", "CHARTOK",
@@ -4109,8 +4114,6 @@ public class CTFParser extends Parser {
                                     break;
                                 case 2:
                                 // Grammar/CTFParser.g:468:10:
-                                {
-                                }
                                     break;
 
                                 }
@@ -4121,8 +4124,6 @@ public class CTFParser extends Parser {
                             break;
                         case 3:
                         // Grammar/CTFParser.g:472:6:
-                        {
-                        }
                             break;
 
                         }
