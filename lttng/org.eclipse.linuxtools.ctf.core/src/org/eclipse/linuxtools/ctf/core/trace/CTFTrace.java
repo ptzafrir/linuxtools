@@ -160,8 +160,9 @@ public class CTFTrace implements IDefinitionScope {
      * Trace constructor.
      *
      * @param path
-     *            Filesystem path of the trace directory.
-     * @throws IOException
+     *            Filesystem path of the trace directory
+     * @throws CTFReaderException
+     *             If no CTF trace was found at the path
      */
     public CTFTrace(String path) throws CTFReaderException {
         this(new File(path));
@@ -174,6 +175,7 @@ public class CTFTrace implements IDefinitionScope {
      * @param path
      *            Filesystem path of the trace directory.
      * @throws CTFReaderException
+     *             If no CTF trace was found at the path
      */
     public CTFTrace(File path) throws CTFReaderException {
         this.path = path;
@@ -255,12 +257,14 @@ public class CTFTrace implements IDefinitionScope {
     // ------------------------------------------------------------------------
 
     /**
-     * Gets an event declaration hashmap for a given streamID
-     * @param streanId
-     * @return the hashmap with the event declarations
+     * Gets an event declaration hash map for a given streamID
+     *
+     * @param streamId
+     *            The ID of the stream from which to read
+     * @return The Hash map with the event declarations
      */
-    public HashMap<Long, EventDeclaration> getEvents(Long streanId) {
-        return eventDecs.get(streanId);
+    public HashMap<Long, EventDeclaration> getEvents(Long streamId) {
+        return eventDecs.get(streamId);
     }
 
     /**
@@ -290,6 +294,8 @@ public class CTFTrace implements IDefinitionScope {
     /**
      * Get an event by it's ID
      *
+     * @param streamId
+     *            The ID of the stream from which to read
      * @param id
      *            the ID of the event
      * @return the event declaration
@@ -604,8 +610,8 @@ public class CTFTrace implements IDefinitionScope {
      *
      * @param stream
      *            A stream object.
-     *
      * @throws ParseException
+     *             If there was some problem reading the metadata
      */
     public void addStream(Stream stream) throws ParseException {
 

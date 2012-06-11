@@ -12,13 +12,14 @@ import org.antlr.runtime.MismatchedTokenException;
 import org.antlr.runtime.NoViableAltException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
+
 /**
  * TSDL Lexer. For internal use only.
  *
  * @author Matthew Khouzam and Antlr
  *
  */
-@SuppressWarnings({"nls"})
+@SuppressWarnings({"nls", "javadoc"})
 public class CTFLexer extends Lexer {
     public static final int SIGN = 49;
     public static final int TERM = 47;

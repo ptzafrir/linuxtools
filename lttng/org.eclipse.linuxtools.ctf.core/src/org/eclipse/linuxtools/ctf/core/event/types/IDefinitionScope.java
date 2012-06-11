@@ -26,6 +26,10 @@ public interface IDefinitionScope {
 
     /**
      * Looks up in this definition scope.
+     *
+     * @param lookupPath
+     *            The path to look up
+     * @return The Definition that was read
      */
     public Definition lookupDefinition(String lookupPath);
 }
