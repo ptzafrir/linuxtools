@@ -23,7 +23,7 @@
 	-->
 
 	<property name="downloads.project.root" value="/technology/linuxtools" />
-	<property name="repo.name" value="updates-nightly" />
+	<property name="repo.name" value="update-1.0" />
 	<property name="build.root" value="${project.build.directory}" />
 	<antversion property="antversion" />
 
