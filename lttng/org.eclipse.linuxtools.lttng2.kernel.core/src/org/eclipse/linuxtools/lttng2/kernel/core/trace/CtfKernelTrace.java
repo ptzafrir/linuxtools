@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
+import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfCpuUsageStateInput;
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.CtfKernelStateInput;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
@@ -36,16 +37,30 @@ import org.eclipse.linuxtools.tmf.core.statesystem.StateSystemManager;
  */
 public class CtfKernelTrace extends CtfTmfTrace {
 
+
+    private ITmfStateSystem cpuUsageSS;
+
     /**
      * The file name of the History Tree
      */
     public final static String HISTORY_TREE_FILE_NAME = "stateHistory.ht"; //$NON-NLS-1$
 
     /**
+     * The file name of the CPU Tree
+     */
+    public final static String CPU_TREE_FILE_NAME= "cpuHistory.ht"; //$NON-NLS-1$
+
+    /**
      * ID of the state system we will build
      * @since 2.0
      * */
     public static final String STATE_ID = "org.eclipse.linuxtools.lttng2.kernel"; //$NON-NLS-1$
+
+    /**
+     * ID of the CPU Usage state system we will build
+     * @since 2.0
+     */
+    public static final String CPU_ID = "org.eclipse.linuxtools.lttng2.cpu"; //$NON-NLS-1$
 
     /**
      * Default constructor
@@ -95,6 +110,11 @@ public class CtfKernelTrace extends CtfTmfTrace {
 
         ITmfStateSystem ss = StateSystemManager.loadStateHistory(htFile, htInput, STATE_ID, false);
         fStateSystems.put(STATE_ID, ss);
-    }
 
+        final File cpuFile = new File(supplDirectory + File.separator + CPU_TREE_FILE_NAME);
+        final IStateChangeInput cpuInput = new CtfCpuUsageStateInput(this);
+
+        ss = StateSystemManager.loadStateHistory(cpuFile, cpuInput, CPU_ID, false);
+        fStateSystems.put(CPU_ID, ss);
+    }
 }
