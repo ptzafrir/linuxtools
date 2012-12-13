@@ -511,9 +511,6 @@ public class CPUUsage extends TmfView {
         return data;
     }
 
-    /**
-     * @return
-     */
     private List<Integer> getPids() {
         List<Integer> children = new ArrayList<Integer>();
         try {
@@ -526,15 +523,14 @@ public class CPUUsage extends TmfView {
     }
 
     class Process implements Comparable<Process> {
-        /*
-         * (non-Javadoc)
-         *
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString() {
-            return procName + ":" + pid; //$NON-NLS-1$
-        }
+
+
+        private final int pidQuark;
+        private final String procName;
+        private final int pid;
+        private final double execTime;
+        private final double execTimeArray[];
+
 
         /**
          * @return the procName
@@ -550,6 +546,9 @@ public class CPUUsage extends TmfView {
             return pid;
         }
 
+        /**
+         * @return the executionTimeArray
+         */
         public double[] getExecTimeArray() {
             return execTimeArray;
         }
@@ -580,11 +579,6 @@ public class CPUUsage extends TmfView {
             execTime = acc;
         }
 
-        final int pidQuark;
-        final String procName;
-        final int pid;
-        final double execTime;
-        final double execTimeArray[];
 
         @Override
         public int compareTo(Process o) {
@@ -596,6 +590,17 @@ public class CPUUsage extends TmfView {
             }
             return 0;
         }
+
+        /*
+         * (non-Javadoc)
+         *
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return procName + ":" + pid; //$NON-NLS-1$
+        }
+
 
     }
 }
