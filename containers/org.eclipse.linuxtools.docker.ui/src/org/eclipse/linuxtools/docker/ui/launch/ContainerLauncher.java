@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2015, 2016, 2017 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.ui.launch;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -24,6 +27,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -36,6 +41,7 @@ import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerContainerConfig;
 import org.eclipse.linuxtools.docker.core.IDockerContainerExit;
 import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
 import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
@@ -127,6 +133,153 @@ public class ContainerLauncher {
 			return status;
 		}
 
+	}
+
+	private class CopyVolumesFromImageJob extends Job {
+
+		private static final String COPY_VOLUMES_FROM_JOB_TITLE = "ContainerLaunch.copyVolumesFromJob.title"; //$NON-NLS-1$
+		private static final String COPY_VOLUMES_FROM_DESC = "ContainerLaunch.copyVolumesFromJob.desc"; //$NON-NLS-1$
+		private static final String COPY_VOLUMES_FROM_TASK = "ContainerLaunch.copyVolumesFromJob.task"; //$NON-NLS-1$
+		private static final String ERROR_COPYING_VOLUME = "ContainerLaunch.copyVolumesFromJob.error"; //$NON-NLS-1$
+
+		private final List<String> volumes;
+		private final IDockerConnection connection;
+		private final String image;
+		private final IPath target;
+
+		public CopyVolumesFromImageJob(
+				IDockerConnection connection,
+				String image, List<String> volumes, IPath target) {
+			super(Messages.getString(COPY_VOLUMES_FROM_JOB_TITLE));
+			this.volumes = volumes;
+			this.connection = connection;
+			this.image = image;
+			this.target = target;
+		}
+
+		@Override
+		protected IStatus run(final IProgressMonitor monitor) {
+			monitor.beginTask(
+					Messages.getString(COPY_VOLUMES_FROM_DESC),
+					volumes.size());
+			String containerId = null;
+			try {
+				DockerContainerConfig.Builder builder = new DockerContainerConfig.Builder()
+						.cmd("/bin/sh").image(image);
+				IDockerContainerConfig config = builder.build();
+				DockerHostConfig.Builder hostBuilder = new DockerHostConfig.Builder();
+				IDockerHostConfig hostConfig = hostBuilder.build();
+				containerId = ((DockerConnection) connection)
+						.createContainer(config, hostConfig, null);
+				for (String volume : volumes) {
+					if (monitor.isCanceled()) {
+						monitor.done();
+						return Status.CANCEL_STATUS;
+					}
+					if (volume.contains("${ProjName}")) {
+						continue;
+					}
+					try {
+						monitor.setTaskName(Messages.getFormattedString(
+								COPY_VOLUMES_FROM_TASK, volume));
+						monitor.worked(1);
+
+
+						InputStream in = ((DockerConnection) connection)
+								.copyContainer(containerId, volume);
+
+						/*
+						 * The input stream from copyContainer might be
+						 * incomplete or non-blocking so we should wrap it in a
+						 * stream that is guaranteed to block until data is
+						 * available.
+						 */
+						TarArchiveInputStream k = new TarArchiveInputStream(
+								new BlockingInputStream(in));
+						TarArchiveEntry te = null;
+						target.toFile().mkdirs();
+						IPath currDir = target.append(volume)
+								.removeLastSegments(1);
+						currDir.toFile().mkdirs();
+						while ((te = k.getNextTarEntry()) != null) {
+							long size = te.getSize();
+							IPath path = currDir;
+							path = path.append(te.getName());
+							File f = new File(path.toOSString());
+							if (te.isDirectory()) {
+								f.mkdir();
+								continue;
+							} else {
+								f.createNewFile();
+							}
+							FileOutputStream os = new FileOutputStream(f);
+							int bufferSize = ((int) size > 4096 ? 4096
+									: (int) size);
+							byte[] barray = new byte[bufferSize];
+							int result = -1;
+							while ((result = k.read(barray, 0,
+									bufferSize)) > -1) {
+								if (monitor.isCanceled()) {
+									monitor.done();
+									k.close();
+									os.close();
+									return Status.CANCEL_STATUS;
+								}
+								os.write(barray, 0, result);
+							}
+							os.close();
+						}
+						k.close();
+					} catch (final DockerException e) {
+						Display.getDefault()
+								.syncExec(() -> MessageDialog.openError(
+										PlatformUI.getWorkbench()
+												.getActiveWorkbenchWindow()
+												.getShell(),
+										Messages.getFormattedString(
+												ERROR_COPYING_VOLUME,
+												new String[] { volume, target
+														.toPortableString() }),
+										e.getCause() != null
+												? e.getCause().getMessage()
+												: e.getMessage()));
+					}
+				}
+			} catch (InterruptedException e) {
+				// do nothing
+			} catch (IOException e) {
+				Activator.log(e);
+			} catch (DockerException e1) {
+				Activator.log(e1);
+			} finally {
+				if (containerId != null) {
+					try {
+						((DockerConnection) connection)
+								.removeContainer(containerId);
+					} catch (DockerException | InterruptedException e) {
+						// ignore
+					}
+				}
+				monitor.done();
+			}
+			return Status.OK_STATUS;
+		}
+	}
+
+	/**
+	 * A blocking input stream that waits until data is available.
+	 */
+	private class BlockingInputStream extends InputStream {
+		private InputStream in;
+
+		public BlockingInputStream(InputStream in) {
+			this.in = in;
+		}
+
+		@Override
+		public int read() throws IOException {
+			return in.read();
+		}
 	}
 
 	/**
@@ -540,6 +693,33 @@ public class ContainerLauncher {
 		public Integer getgid() {
 			return gid;
 		}
+	}
+
+	/**
+	 * @since 3.0
+	 */
+	public int fetchContainerDirs(String connectionUri, String imageName,
+			List<String> containerDirs, IPath hostDir) {
+		// Try and use the specified connection that was used before,
+		// otherwise, open an error
+		final IDockerConnection connection = DockerConnectionManager
+				.getInstance().getConnectionByUri(connectionUri);
+		if (connection == null) {
+			Display.getDefault()
+					.syncExec(() -> MessageDialog.openError(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
+							DVMessages.getString(ERROR_LAUNCHING_CONTAINER),
+							DVMessages.getFormattedString(
+									ERROR_NO_CONNECTION_WITH_URI,
+									connectionUri)));
+			return -1;
+		}
+
+		CopyVolumesFromImageJob job = new CopyVolumesFromImageJob(connection,
+				imageName, containerDirs, hostDir);
+		job.schedule();
+		return 0;
 	}
 
 	/**
