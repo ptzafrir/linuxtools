@@ -626,10 +626,11 @@ public class DockerConnection
 				int delayTime = 100;
 
 				do {
+					outputStream.write("Sleeping".getBytes());
 					Thread.sleep(delayTime);
 					// Second time in loop and following, pause a second to
 					// allow other threads to do meaningful work
-					delayTime = 1000;
+					delayTime = 500;
 					while (stream.hasNext()) {
 						ByteBuffer b = stream.next().content();
 						byte[] bytes = new byte[b.remaining()];
@@ -1092,6 +1093,17 @@ public class DockerConnection
 			}
 		}
 		return false;
+	}
+
+	public IDockerImage getImageByTag(final String tag) {
+		for (IDockerImage image : getImages()) {
+			for (String repoTag : image.repoTags()) {
+				if (repoTag.equals(tag)) {
+					return image;
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override

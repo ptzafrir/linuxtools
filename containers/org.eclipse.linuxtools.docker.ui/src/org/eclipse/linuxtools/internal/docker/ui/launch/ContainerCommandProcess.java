@@ -37,6 +37,8 @@ public class ContainerCommandProcess extends Process {
 					PipedOutputStream pipedStderr = new PipedOutputStream(
 							stderr)) {
 				connection.attachLog(containerId, pipedStdout, pipedStderr);
+				pipedStdout.flush();
+				pipedStderr.flush();
 			} catch (DockerException | InterruptedException | IOException e) {
 				// do nothing but close output streams
 			}
@@ -45,30 +47,18 @@ public class ContainerCommandProcess extends Process {
 		// start the thread
 		this.thread = new Thread(logContainer);
 		this.thread.start();
-		// Runnable watchContainer = () -> {
-		// try {
-		// IDockerContainerExit exit = connection
-		// .waitForContainer(containerId);
-		// } catch (DockerException | InterruptedException e) {
-		// // do nothing
-		// }
-		//
-		// try {
-		// System.out.println("watchcontainer finished");
-		// this.stdout.close();
-		// this.stderr.close();
-		// this.thread.interrupt();
-		// } catch (IOException e) {
-		// Activator.log(e);
-		// }
-		// };
-		// // kick off a thread to stop logging
-		// new Thread(watchContainer).start();
 	}
 
 	@Override
 	public void destroy() {
 		try {
+			try {
+				// TODO: see if there is a better way of draining the
+				// container output before closing the streams
+				Thread.sleep(1000);
+			} catch (InterruptedException e1) {
+				// ignore
+			}
 			this.stdout.close();
 			this.stderr.close();
 		} catch (IOException e) {
@@ -115,6 +105,7 @@ public class ContainerCommandProcess extends Process {
 		try {
 			IDockerContainerExit exit = connection
 					.waitForContainer(containerId);
+			connection.stopLoggingThread(containerId);
 			return exit.statusCode();
 		} catch (DockerException e) {
 			return -1;

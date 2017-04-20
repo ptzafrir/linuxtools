@@ -10,10 +10,18 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.ui.launch;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -34,6 +42,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -67,9 +76,14 @@ public class ContainerLauncher {
 	private static final String ERROR_NO_CONNECTIONS = "ContainerNoConnections.msg"; //$NON-NLS-1$
 	private static final String ERROR_NO_CONNECTION_WITH_URI = "ContainerNoConnectionWithURI.msg"; //$NON-NLS-1$
 
+	private static final String DIRFILE_NAME = "copiedVolumes"; //$NON-NLS-1$
+
 	private static RunConsole console;
 
 	private static Map<IProject, ID> fidMap = new HashMap<>();
+
+	private static Object lockObject = new Object();
+	private static Map<String, Map<String, Set<String>>> copiedVolumesMap = null;
 
 	private class CopyVolumesJob extends Job {
 
@@ -140,12 +154,14 @@ public class ContainerLauncher {
 		private static final String COPY_VOLUMES_FROM_JOB_TITLE = "ContainerLaunch.copyVolumesFromJob.title"; //$NON-NLS-1$
 		private static final String COPY_VOLUMES_FROM_DESC = "ContainerLaunch.copyVolumesFromJob.desc"; //$NON-NLS-1$
 		private static final String COPY_VOLUMES_FROM_TASK = "ContainerLaunch.copyVolumesFromJob.task"; //$NON-NLS-1$
-		private static final String ERROR_COPYING_VOLUME = "ContainerLaunch.copyVolumesFromJob.error"; //$NON-NLS-1$
+		// private static final String ERROR_COPYING_VOLUME =
+		// "ContainerLaunch.copyVolumesFromJob.error"; //$NON-NLS-1$
 
 		private final List<String> volumes;
 		private final IDockerConnection connection;
 		private final String image;
 		private final IPath target;
+		private Set<String> dirList;
 
 		public CopyVolumesFromImageJob(
 				IDockerConnection connection,
@@ -155,17 +171,61 @@ public class ContainerLauncher {
 			this.connection = connection;
 			this.image = image;
 			this.target = target;
+			Map<String, Set<String>> dirMap = null;
+			synchronized (lockObject) {
+				String uri = connection.getUri();
+				dirMap = copiedVolumesMap.get(uri);
+				if (dirMap == null) {
+					dirMap = new HashMap<>();
+					copiedVolumesMap.put(uri, dirMap);
+				}
+				dirList = dirMap.get(image);
+				if (dirList == null) {
+					dirList = new HashSet<>();
+					dirMap.put(image, dirList);
+				}
+			}
 		}
 
 		@Override
 		protected IStatus run(final IProgressMonitor monitor) {
 			monitor.beginTask(
-					Messages.getString(COPY_VOLUMES_FROM_DESC),
+					Messages.getFormattedString(COPY_VOLUMES_FROM_DESC, image),
 					volumes.size());
 			String containerId = null;
 			try {
+				IDockerImage dockerImage = ((DockerConnection) connection)
+						.getImageByTag(image);
+				IPath imageFilePath = target.append(".IMAGE_ID");
+				File imageFile = imageFilePath.toFile();
+				boolean needImageIdFile = !imageFile.exists();
+				if (!needImageIdFile) {
+					try (FileReader reader = new FileReader(imageFile);
+							BufferedReader bufferReader = new BufferedReader(
+									reader);) {
+						String imageId = bufferReader.readLine();
+						if (!dockerImage.id().equals(imageId)) {
+							// if image id has changed...all bets are off
+							// and we must reload all directories
+							dirList.clear();
+							needImageIdFile = true;
+						}
+					} catch (IOException e) {
+						// ignore
+					}
+				}
+				if (needImageIdFile) {
+					try (FileWriter writer = new FileWriter(imageFile);
+							BufferedWriter bufferedWriter = new BufferedWriter(
+									writer);) {
+						bufferedWriter.write(dockerImage.id());
+						bufferedWriter.newLine();
+					} catch (IOException e) {
+						// ignore
+					}
+				}
 				DockerContainerConfig.Builder builder = new DockerContainerConfig.Builder()
-						.cmd("/bin/sh").image(image);
+						.cmd("/bin/sh").image(image); //$NON-NLS-1$
 				IDockerContainerConfig config = builder.build();
 				DockerHostConfig.Builder hostBuilder = new DockerHostConfig.Builder();
 				IDockerHostConfig hostConfig = hostBuilder.build();
@@ -176,7 +236,12 @@ public class ContainerLauncher {
 						monitor.done();
 						return Status.CANCEL_STATUS;
 					}
-					if (volume.contains("${ProjName}")) {
+					if (volume.contains("${ProjName}")) { //$NON-NLS-1$
+						monitor.worked(1);
+						continue;
+					}
+					if (dirList.contains(volume)) {
+						monitor.worked(1);
 						continue;
 					}
 					try {
@@ -187,6 +252,10 @@ public class ContainerLauncher {
 
 						InputStream in = ((DockerConnection) connection)
 								.copyContainer(containerId, volume);
+
+						synchronized (lockObject) {
+							dirList.add(volume);
+						}
 
 						/*
 						 * The input stream from copyContainer might be
@@ -231,18 +300,18 @@ public class ContainerLauncher {
 						}
 						k.close();
 					} catch (final DockerException e) {
-						Display.getDefault()
-								.syncExec(() -> MessageDialog.openError(
-										PlatformUI.getWorkbench()
-												.getActiveWorkbenchWindow()
-												.getShell(),
-										Messages.getFormattedString(
-												ERROR_COPYING_VOLUME,
-												new String[] { volume, target
-														.toPortableString() }),
-										e.getCause() != null
-												? e.getCause().getMessage()
-												: e.getMessage()));
+						// Display.getDefault()
+						// .syncExec(() -> MessageDialog.openError(
+						// PlatformUI.getWorkbench()
+						// .getActiveWorkbenchWindow()
+						// .getShell(),
+						// Messages.getFormattedString(
+						// ERROR_COPYING_VOLUME,
+						// new String[] { volume, target
+						// .toPortableString() }),
+						// e.getCause() != null
+						// ? e.getCause().getMessage()
+						// : e.getMessage()));
 					}
 				}
 			} catch (InterruptedException e) {
@@ -279,6 +348,58 @@ public class ContainerLauncher {
 		@Override
 		public int read() throws IOException {
 			return in.read();
+		}
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		synchronized (lockObject) {
+			if (copiedVolumesMap != null) {
+				IPath pluginPath = Platform.getStateLocation(
+						Platform.getBundle(Activator.PLUGIN_ID));
+				IPath path = pluginPath.append(DIRFILE_NAME);
+
+				File dirFile = path.toFile();
+				FileOutputStream f = new FileOutputStream(dirFile);
+				try (ObjectOutputStream oos = new ObjectOutputStream(f)) {
+					oos.writeObject(copiedVolumesMap);
+				}
+			}
+		}
+		super.finalize();
+	}
+
+	public ContainerLauncher() {
+		initialize();
+	}
+
+	@SuppressWarnings("unchecked")
+	private void initialize() {
+		synchronized (lockObject) {
+			if (copiedVolumesMap == null) {
+				IPath pluginPath = Platform.getStateLocation(
+						Platform.getBundle(Activator.PLUGIN_ID));
+				IPath path = pluginPath.append(DIRFILE_NAME);
+
+				File dirFile = path.toFile();
+				if (dirFile.exists()) {
+					try (FileInputStream f = new FileInputStream(dirFile)) {
+						try (ObjectInputStream ois = new ObjectInputStream(f)) {
+							copiedVolumesMap = (Map<String, Map<String, Set<String>>>) ois
+									.readObject();
+						} catch (ClassNotFoundException
+								| FileNotFoundException e) {
+							// should never happen
+							e.printStackTrace();
+						}
+					} catch (IOException e) {
+						// will handle this below
+					}
+				}
+			}
+			if (copiedVolumesMap == null) {
+				copiedVolumesMap = new HashMap<>();
+			}
 		}
 	}
 
@@ -1061,6 +1182,25 @@ public class ContainerLauncher {
 		}
 		return result;
 
+	}
+
+	/**
+	 * @since 3.0
+	 */
+	public Set<String> getCopiedVolumes(String connectionName,
+			String imageName) {
+		Set<String> copiedSet = new HashSet<>();
+		if (copiedVolumesMap != null) {
+			Map<String, Set<String>> connectionMap = copiedVolumesMap
+					.get(connectionName);
+			if (connectionMap != null) {
+				Set<String> imageSet = connectionMap.get(imageName);
+				if (imageSet != null) {
+					copiedSet = imageSet;
+				}
+			}
+		}
+		return copiedSet;
 	}
 
 }
