@@ -18,7 +18,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.spotify.docker.client.messages.ImageSearchResult;
 
 /**
@@ -99,7 +99,7 @@ public class ImageSearchResultV1 {
 
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper(this)
+		return Objects.toStringHelper(this)
 				.add("num_pages", getTotalPages()) //$NON-NLS-1$
 				.add("num_results", getTotalResults()) //$NON-NLS-1$
 				.add("page_size", getPageSize()) //$NON-NLS-1$

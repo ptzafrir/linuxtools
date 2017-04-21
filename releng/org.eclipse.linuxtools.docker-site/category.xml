@@ -51,9 +51,6 @@
    <iu id="com.kenai.jffi" version="0.0.0">
         <category name="Docker Client Dependencies"/>
    </iu>
-   <iu id="jnr.constants" version="0.0.0">
-        <category name="Docker Client Dependencies"/>
-   </iu>
    <iu id="jnr.enxio" version="0.0.0">
         <category name="Docker Client Dependencies"/>
    </iu>
