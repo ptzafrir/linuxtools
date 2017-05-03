@@ -604,6 +604,7 @@ public class DockerConnection
 
 		@Override
 		public void execute() throws InterruptedException, IOException {
+			LogStream stream = null;
 			try {
 				// Add timestamps to log based on user preference
 				IEclipsePreferences preferences = InstanceScope.INSTANCE
@@ -612,7 +613,6 @@ public class DockerConnection
 				boolean timestamps = preferences.getBoolean(
 						"logTimestamp", true); //$NON-NLS-1$
 
-				LogStream stream = null;
 
 				if (timestamps)
 					stream = copyClient.logs(id, LogsParam.follow(),
@@ -626,7 +626,6 @@ public class DockerConnection
 				int delayTime = 100;
 
 				do {
-					outputStream.write("Sleeping".getBytes());
 					Thread.sleep(delayTime);
 					// Second time in loop and following, pause a second to
 					// allow other threads to do meaningful work
@@ -657,6 +656,8 @@ public class DockerConnection
 			} finally {
 				follow = false;
 				copyClient.close(); // we are done with copyClient..dispose
+				if (stream != null)
+					stream.close();
 				if (outputStream != null)
 					outputStream.close();
 			}

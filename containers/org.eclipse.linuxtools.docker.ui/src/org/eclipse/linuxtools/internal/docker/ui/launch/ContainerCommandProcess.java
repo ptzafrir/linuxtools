@@ -54,7 +54,9 @@ public class ContainerCommandProcess extends Process {
 		try {
 			try {
 				// TODO: see if there is a better way of draining the
-				// container output before closing the streams
+				// container output before closing the streams. Note
+				// that trying to join the attachLog thread does not
+				// work.
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {
 				// ignore
@@ -106,6 +108,9 @@ public class ContainerCommandProcess extends Process {
 			IDockerContainerExit exit = connection
 					.waitForContainer(containerId);
 			connection.stopLoggingThread(containerId);
+			if (!keepContainer) {
+				connection.removeContainer(containerId);
+			}
 			return exit.statusCode();
 		} catch (DockerException e) {
 			return -1;

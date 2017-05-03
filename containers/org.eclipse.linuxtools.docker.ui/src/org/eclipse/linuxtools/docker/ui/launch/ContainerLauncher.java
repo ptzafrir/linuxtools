@@ -196,7 +196,10 @@ public class ContainerLauncher {
 			try {
 				IDockerImage dockerImage = ((DockerConnection) connection)
 						.getImageByTag(image);
-				IPath imageFilePath = target.append(".IMAGE_ID");
+				// if there is a .image_id file, check the image id to ensure
+				// the user hasn't loaded a new version which may have
+				// different header files installed.
+				IPath imageFilePath = target.append(".image_id"); //$NON-NLS-1$
 				File imageFile = imageFilePath.toFile();
 				boolean needImageIdFile = !imageFile.exists();
 				if (!needImageIdFile) {
@@ -240,9 +243,16 @@ public class ContainerLauncher {
 						monitor.worked(1);
 						continue;
 					}
-					if (dirList.contains(volume)) {
-						monitor.worked(1);
-						continue;
+					// if we have already copied the directory either directly
+					// or as part of a parent directory copy, then skip to next
+					// volume.
+					for (String path : dirList) {
+						if (volume.equals(path)
+								|| (volume.startsWith(path) && volume.charAt(
+										path.length()) == File.separatorChar)) {
+							monitor.worked(1);
+							continue;
+						}
 					}
 					try {
 						monitor.setTaskName(Messages.getFormattedString(
@@ -300,18 +310,7 @@ public class ContainerLauncher {
 						}
 						k.close();
 					} catch (final DockerException e) {
-						// Display.getDefault()
-						// .syncExec(() -> MessageDialog.openError(
-						// PlatformUI.getWorkbench()
-						// .getActiveWorkbenchWindow()
-						// .getShell(),
-						// Messages.getFormattedString(
-						// ERROR_COPYING_VOLUME,
-						// new String[] { volume, target
-						// .toPortableString() }),
-						// e.getCause() != null
-						// ? e.getCause().getMessage()
-						// : e.getMessage()));
+						// ignore
 					}
 				}
 			} catch (InterruptedException e) {
