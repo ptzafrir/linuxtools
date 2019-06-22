@@ -39,6 +39,16 @@ pipeline {
             echo 'Running integration tests'
           }
         }
+        stage('Performance Tests') {
+          steps {
+            echo 'Running performance tests'
+          }
+        }
+      }
+    }
+    stage('Generate Reports') {
+      steps {
+        echo 'Collect all test results and code coverage and generate report'
       }
     }
   }
