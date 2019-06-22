@@ -20,26 +20,18 @@ pipeline {
       }
     }
     stage('Build') {
-        stage('build') {
-          environment {
-            TTTT = 'key'
-          }
-          steps {
-            echo 'running build script on Release'
-          }
+        environment {
+          TTTT = 'key'
+        }
+        steps {
+          echo 'running build script on Release'
         }
     }
     stage('Tests') {
-	stage('unit tests') {
           steps {
             echo 'Running unit tests'
-          }
-	}
-	stage('integration tests') {
-          steps {
             echo 'Running integration tests'
           }
-	}
     }
   }
   environment {
