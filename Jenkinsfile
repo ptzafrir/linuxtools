@@ -1,47 +1,45 @@
 pipeline {
   agent any
   stages {
-    stage('Intro') {
+    stage('Code quality') {
       parallel {
-        stage('Intro') {
+        stage('Lint') {
           steps {
-            timeout(time: 20, activity: true) {
-              sh 'echo "why am i here"'
+            timeoutdd(time: 20, activity: true) {
               dir(path: 'myinnerdir') {
-                sleep 10
-                echo 'I\'m here'
+                echo 'Running lint and checkpatch'
               }
-
             }
-
           }
         }
-        stage('Middle') {
+        stage('Static Analysis') {
           steps {
-            echo 'retry'
+            echo 'running cppcheck'
           }
         }
       }
     }
-    stage('1') {
-      parallel {
-        stage('1') {
+    stage('Build') {
+        stage('build') {
           environment {
             TTTT = 'key'
           }
           steps {
-            sh 'ls'
+            echo 'running build script on Release'
           }
         }
-        stage('2') {
-          environment {
-            PPP = 'value'
-          }
+    }
+    stage('Tests') {
+	stage('unit tests') {
           steps {
-            sh 'pwd'
+            echo 'Running unit tests'
           }
-        }
-      }
+	}
+	stage('integration tests') {
+          steps {
+            echo 'Running integration tests'
+          }
+	}
     }
   }
   environment {
