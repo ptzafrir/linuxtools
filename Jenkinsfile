@@ -5,7 +5,7 @@ pipeline {
       parallel {
         stage('Lint') {
           steps {
-            timeoutdd(time: 20, activity: true) {
+            timeout(time: 20, activity: true) {
               dir(path: 'myinnerdir') {
                 echo 'Running lint and checkpatch'
               }
