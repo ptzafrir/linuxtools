@@ -28,10 +28,18 @@ pipeline {
         }
     }
     stage('Tests') {
+      parallel {
+        stage('Unit Tests') {
           steps {
             echo 'Running unit tests'
+          }
+        }
+        stage('Integration Tests') {
+          steps {
             echo 'Running integration tests'
           }
+        }
+      }
     }
   }
   environment {
